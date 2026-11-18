@@ -1,0 +1,49 @@
+services:
+  database:
+    image: mariadb:10.11
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - "./pterodactyl/database:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: password123
+      MYSQL_DATABASE: panel
+      MYSQL_USER: pterodactyl
+      MYSQL_PASSWORD: password123
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  cache:
+    image: redis:alpine
+    restart: always
+  panel:
+    image: ghcr.io/pterodactyl/panel:latest
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      - "./pterodactyl/var:/app/var"
+      - "./pterodactyl/nginx:/etc/nginx/http.d"
+      - "./pterodactyl/certs:/etc/letsencrypt"
+      - "./pterodactyl/logs:/app/storage/logs"
+    environment:
+      APP_URL: "http://localhost:8080"
+      APP_TIMEZONE: "Asia/Jakarta"
+      APP_SERVICE_AUTHOR: "admin@admin.com"
+      TRUSTED_PROXIES: "*"
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: panel
+      DB_USERNAME: pterodactyl
+      DB_PASSWORD: password123
+      DB_SSL_MODE: disabled
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
