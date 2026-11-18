@@ -2,7 +2,17 @@
   "name": "Pterodactyl",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {}
   },
-  "forwardPorts": [80]
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-vscode.vscode-json"]
+    }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y ca-certificates curl",
+  "remoteUser": "vscode"
 }
